@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+    tools {
+     maven 'Maven home'
+    }
+    stages {
+        stage('SCM-Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'Vaishakh-Git', 
+                url: 'https://github.com/vaishakhs/jenkins-ansible-intergration.git'
+            }
+        }
+        stage('Clean-Compile') {
+            steps {
+                sh "mvn clean compile"
+            }
+        }
+        stage('Maven-Package') {
+            steps {
+                sh "mvn package"
+            }
+        }
+        stage('Tomcat-Deployment') {
+            steps {
+                sshagent(['Tomcat-EC2-User']) {
+				   sh "scp -o StrictHostKeyChecking=no target/SampleWebApp.war ec2-user@172.31.83.68:/opt/tomcat/webapps"
+				}   
+            }
+        }
+    }
+}
