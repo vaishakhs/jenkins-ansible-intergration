@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+	tools {
+		maven 'Maven home'
+		}
+    stages {
+        stage('SCM-Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'Vaishakh-Git', 
+                url: 'https://github.com/vaishakhs/jenkins-ansible-intergration.git'
+            }
+        }
+		
+        stage('Clean-Compile') {
+            steps {
+                sh "mvn clean compile"
+            }
+		}	
+		
+        stage('Package') {
+            steps {
+                sh "mvn package"
+            }
+        }
+        stage('Ansible-Deployment') {
+            steps {
+                ansiblePlaybook become: true, credentialsId: 'Vaishakh-Vergian-Region', disableHostKeyChecking: true, installation: 'ansible-controller-node', inventory: 'hosts', playbook: 'install-httpd.yml'
+            }
+        }		
+		
+    }
+}
+
